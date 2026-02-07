@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>単語クイズ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#111;font-family:system-ui,-apple-system,sans-serif;color:#E0E0E0;overflow-x:hidden}
+.wrap{max-width:500px;margin:0 auto;padding:12px}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.hdr .t{font-size:18px;font-weight:800;color:#33FF66}
+.hdr .p{font-size:13px;color:#777}
+.bar{width:100%;height:3px;background:#222;border-radius:2px;margin-bottom:4px}
+.bar .fill{height:3px;background:linear-gradient(90deg,#33FF66,#5599ff);border-radius:2px;transition:width .3s}
+.stats{display:flex;gap:12px;justify-content:center;padding:4px 0;font-size:12px;color:#777;flex-wrap:wrap}
+.stats b{margin-left:3px}
+.flt{display:flex;gap:5px;padding:6px 0;flex-wrap:wrap;justify-content:center}
+.flt button{padding:5px 12px;border-radius:14px;border:1px solid #333;background:transparent;color:#777;font-size:11px;cursor:pointer;font-weight:400}
+.flt button.on{border-color:#33FF66;background:#33FF66;color:#111;font-weight:700}
+.mtag{display:flex;gap:8px;align-items:center;padding:2px 0 8px;justify-content:center}
+.mtag .tag{font-size:11px;padding:2px 10px;border-radius:10px;font-weight:700}
+.mtag .rv{font-size:11px;color:#ff6b6b;font-weight:700}
+.card{background:#1a1a1a;border-radius:14px;padding:20px 16px 18px;position:relative;border:1px solid #222}
+.card.ok{border-color:#33FF66}
+.card.ng{border-color:#ff6b6b}
+.acts{position:absolute;top:10px;right:10px;display:flex;gap:6px}
+.acts button{width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.q-label{font-size:11px;color:#777;letter-spacing:1px}
+.q-word{font-size:46px;font-weight:900;text-align:center;color:#fff;margin:12px 0}
+.q-fill{font-size:22px;text-align:center;color:#E0E0E0;margin:10px 0;line-height:1.5}
+.q-fillk{font-size:16px;color:#ccc;text-align:center;margin-bottom:6px}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.opt{padding:12px 14px;border:1px solid #2a2a2a;border-radius:10px;background:#141414;color:#E0E0E0;font-size:18px;cursor:pointer;text-align:center;transition:all .15s}
+.opt:active{transform:scale(.97)}
+.opt.sel-ok{background:rgba(51,255,102,.1);border-color:#33FF66;color:#33FF66}
+.opt.sel-ng{background:rgba(255,107,107,.1);border-color:#ff6b6b;color:#ff6b6b}
+.opt.show-ok{border-color:#33FF66;color:#33FF66;opacity:.6}
+.opt.dim{opacity:.25}
+.opt.locked{cursor:default}
+.back{margin-top:12px;padding:16px;background:#141414;border-radius:12px;border-left:3px solid #33FF66}
+.back .bw{font-size:36px;font-weight:800;color:#fff;text-align:center}
+.back .bki{font-size:14px;color:#aaa;text-align:center;margin:4px 0}
+.back .br{font-size:24px;color:#33FF66;text-align:center;margin:4px 0}
+.back .bm{font-size:22px;color:#FFFF33;text-align:center;margin:4px 0}
+.back .bex{font-size:16px;color:#ccc;text-align:center;font-style:italic}
+.back .bej{font-size:18px;color:#E0E0E0;text-align:center;margin:6px 0;line-height:1.5}
+.back .bek{font-size:16px;color:#ccc;text-align:center}
+.back .bwrong{margin-top:8px;padding-top:8px;border-top:1px solid #222;text-align:center;font-size:14px;color:#ff6b6b}
+.nxt{width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;background:#33FF66;color:#111;font-size:15px;font-weight:700;cursor:pointer}
+.nxt:active{transform:scale(.98)}
+.ox{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:999;pointer-events:none}
+.ox span{font-size:150px;animation:oxP .8s ease forwards}
+@keyframes oxP{0%{transform:scale(.3);opacity:0}30%{transform:scale(1.2);opacity:.9}60%{transform:scale(1);opacity:.85}100%{transform:scale(1);opacity:0}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+var D=[["追い上げる","おいあげる","뒤쫓다, 따라잡다","後半で追い上げる","후반에 따라잡다",""],["確固不動","かっこふどう","확고부동","確固不動の信念を持つ。","확고부동한 신념을 갖다.",""],["招聘","しょうへい","초빙하다 (文語/격식)","有名な教授を招聘する。","유명한 교수를 초빙하다.",""],["持ち上がる","もちあがる","들리다, 일이 일어나다","急に問題が持ち上がった。","갑자기 문제가 생겼다.",""],["早早","そうそう","서둘러, 일찌감치","早早に帰って休もう。","일찍 돌아가서 쉬자.",""],["目先","めさき","눈앞; 당장; 장래(앞날)","目先の利益を追うな。","눈앞의 이익만 좇지 마라.",""],["桂林","けいりん","계림; 계수나무 숲","桂林の景色は美しい。","계림의 경치는 아름답다.",""],["歳月","さいげつ","세월 (文語的)","","",""],["物議","ぶつぎ","물의; 뭇사람의 평판","","",""],["一頭地を抜く","いっとうちをぬく","한 단계 앞서다; 뛰어나다 (文語/관용구)","彼は同期の中で一頭地を抜いている。","그는 동기들 중에서도 한 단계 앞서 있어.",""],["代表","だいひょう","대표","","",""],["査察","ささつ","사찰; 조사","警察(けいさつ)が工場(こうじょう)を査察(ささつ)した。","경찰이 공장을 사찰했다.",""],["粉骨砕身","ふんこつさいしん","분골쇄신","粉骨砕身の努力をする。","분골쇄신의 노력을 하다.",""],["片付く","かたづく","① 정리되다 ② 처리되다 (自動詞)","仕事が片付いた。","일이 정리됐다.",""],["新しい皮袋","あたらしいかわぶくろ","새 가죽 부대","新しいアイデアは新しい皮袋に入れないとね。","새로운 아이디어는 새로운 방식으로 표현해야지.",""],["所所方方","しょしょほうぼう","방방곡곡; 여기저기","所所方方を旅してきた。","이곳저곳을 여행하고 왔어.",""],["呆気にとられる","あっけにとられる","어안이 벙벙하다.","意外な結果に呆気にとられる","뜻밖의 결과에 어이없다",""],["美魔女","びまじょ","미마녀; 아름다운 중년 여성","美魔女たちが話題になっている","미마녀들이 화제가 되고 있다",""],["零度","れいど","영도","","",""],["狭まる","せばまる","① 좁아지다 (自動詞)","道が狭まる。","② 좁혀지다",""],["能天気","のうてんき","덜렁댐, 태평함","","",""],["廉価","れんか","염가, 싼 값","","",""],["脆弱","ぜいじゃく","취약; 약함","脆弱なからだ","약한 몸",""],["すっ裸","すっぱだか","알몸; 무일푼","すっ裸(ぱだか)で出直(でなお)しだ。","맨몸으로 다시 시작이다.",""],["バブル","バブル","버블; 거품; 투기 경기","バブルがはじけた。","버블이 터졌다.",""],["頭にげんこつを食らう","あたまにげんこつをくらう","꿀밤을 먹다 (口語)","いたずらして頭にげんこつを食らった","장난치다 꿀밤을 맞았다",""],["繁茂","はんも","번무(식물이 무성함)","","",""],["喇叭飲み","らっぱのみ","병나발, 병째 마시기 (口語)","コーラを喇叭飲みするのはやめなよ。","콜라를 병째로 마시는 건 그만해.",""],["仁徳","じんとく","인의, 어진 덕 (漢語/文語)","","",""],["化けの皮がはがれる","ばけのかわがはがれる","정체가 드러나다","ついに化けの皮がはがれたな。","드디어 가면이 벗겨졌네.",""],["携わる","たずさわる","관계하다; 종사하다","教育(きょういく)に携(たずさ)わっている。","교육에 종사하고 있다.",""],["火の粉","ひのこ","불똥; 불티","火(ひ)の粉(こ)を浴(あ)びてびっくりした","불티가 튀어 깜짝 놀랐다",""],["水がめ","みずがめ","물독, 물동이","水(みず)がめに水(みず)を汲(く)む","물독에 물을 길다",""],["女中","じょちゅう","하녀; 식모 (古い)","昔は女中がいた。","예전엔 하녀가 있었어.",""],["指し示す","さししめ-す","가리키다; 지적하다","地図(ちず)で目的地(もくてきち)を指し示(しめ)す。","지도에서 목적지를 가리키다.",""],["読返す","よみかえす","되풀이 읽다; 다시 읽다","手紙(てがみ)を何度(なんど)も読(よ)み返(かえ)した","편지를 여러 번 다시 읽었다",""],["殺傷","さっしょう","살상","殺傷事件が発生した。","살상 사건이 발생했다.",""],["石橋を叩いて渡る","いしばしをたたいてわたる","돌다리도 두들겨 보고 건너다","彼は石橋を叩いて渡るタイプだ。","그는 뭐든 신중하게 하는 타입이야.",""],["無病息災","むびょうそくさい","무병식재; 탈 없이 건강함","家族の無病息災を神社で祈った。","가족의 무병과 안녕을 신사에서 빌었다.",""],["不図した","ふとした","우연한; 사소한","不図(ふと)したことで昔(むかし)の友(とも)に会(あ)った","우연히 옛 친구를 만났다",""],["局外者","きょくがいしゃ","국외자, 제3자","私はこの問題には局外者です。","저는 이 문제에는 제3자예요.",""],["見えを張る","みえをはる","허세를 부리다; 겉을 꾸미다","彼(かれ)は見(み)えを張(は)って高(たか)い車(くるま)を買(か)った","그는 허세를 부려 비싼 차를 샀다",""],["機","はた／き","베틀, 기계","","",""],["やり遂げる","やりとげる","완수하다, 끝까지 해내다","約束したことは必ずやり遂げる。","약속한 일은 반드시 해낸다.",""],["酒粕","さけかす","술지게미","酒粕を使って甘酒を作った。","술지게미로 감주를 만들었다.",""],["ちゃっかり","ちゃっかり","약삭빠르게; 빈틈없이","彼はちゃっかりおいしいところを持っていった。","그는 약삭빠르게 맛있는 부분만 챙겼다.",""],["失する","しっする","잃다, 놓치다 / 잊다","機会を失する","기회를 놓치다",""],["巷","ちまた","거리, 시가, 세상 (文語的)","歓楽(かんらく)の巷(ちまた)で遊(あそ)んでいる","환락의 거리에서 놀고 있다",""],["画報","がほう","화보","雑誌の画報ページで新作を特集している。","잡지 화보 페이지에서 신작을 특집하고 있다.",""],["峰","みね／ほう","산봉우리 봉","","",""],["空空しい","そらぞらしい","시치미 떼다; 빤히 속 보이다","空空しい顔","시치미를 떼는 얼굴",""],["湛える","たたえる","가득 채우다; 띄우다 (文語)","彼(かれ)は笑顔(えがお)を湛(たた)えて手(て)を振(ふ)った","그는 웃음을 띄우며 손을 흔들었다",""],["示談","じだん","시담, 당사자 합의","交通事故は示談で解決した","교통사고는 합의로 해결했다",""],["大分","だいぶ","상당히, 꽤","大分寒くなってきた","꽤 추워졌다",""],["持ち場","もちば","담당 구역, 부서","各自の持ち場をしっかり守ってください。","각자의 담당 구역을 철저히 지켜 주세요.",""],["操る","あやつる","조종하다·구사하다","彼は三か国語を自由に操る。","그는 세 나라 말을 자유롭게 구사한다.",""],["大らか","おおらか","느긋하고 대범한 (긍정적)","彼女は大らかな性格でみんなに好かれている。","그녀는 느긋한 성격으로 모두에게 호감을 산다.",""],["裾野","すその","산기슭","富士山の裾野に広がる町。","후지산 산기슭에 펼쳐진 마을.",""],["神宮","じんぐう","신궁 (神道)","今度、神宮に一緒に行こうよ。","다음에 신궁 같이 가자.",""],["弾よけ","たまよけ","방탄; 탄알을 막는 것","弾よけの盾。","방탄 방패.",""],["手回し","てまわし","미리 준비함, 손을 써 둠","","",""],["手口","てぐち","수법; 방식","その詐欺、最近よくある手口らしいよ。","그 사기, 요즘 흔한 수법이래.",""],["石部金吉","いしべきんきち","융통성 없는 사람","彼は本当に石部金吉みたいな性格だ。","그는 정말 융통성 없는 성격이야.",""],["苦になる","くになる","마음에 걸리다","あの一言がずっと苦になっている。","그 한마디가 계속 마음에 걸린다.",""],["託ける","かこつける","핑계삼다; 빙자하다","彼は体調不良に託けて会議を欠席した。","그는 몸이 아프다며 회의를 빼먹었다.",""],["山羊","やぎ","염소","山羊(やぎ)の乳(ちち)は少(すこ)し匂(にお)いが強(つよ)い","염소젖은 냄새가 좀 강하다",""],["癪","しゃく","울화; 격통(위경련)","その言い方、ほんと癪(しゃく)にさわる。","그 말투, 정말 얄밉다.",""],["退く","しりぞく","물러나다·퇴각하다","","",""],["しょぼい","しょぼい","시시하다, 김새다 (俗語)","しょぼいこと言うな","시시한 말 하지 마라",""],["魂消る","たまげる","깜짝 놀라다 (口語)","値段に魂消た。","가격에 깜짝 놀랐다.",""],["出る杭は打たれる","でるくいはうたれる","튀면 미움받는다(속담)","出る杭は打たれると言うが挑戦したい。","튀면 미움받는다지만 그래도 도전하고 싶다.",""],["鼓笛隊","こてきたい","고적대","子どもたちの鼓笛隊が商店街を行進した。","아이들 고적대가 상가 거리를 행진했다.",""],["陳情","ちんじょう","진정(의견서 제출)","","",""],["汚名","おめい","오명","","",""],["暁鐘","ぎょうしょう","새벽 종소리","暁鐘が鳴り響く","새벽 종소리가 울려퍼지다",""],["素晴らしい","すばらしい","훌륭하다; 멋지다 (긍정적 감탄)","素晴らしい景色で、思わず写真撮っちゃった！","멋진 풍경이라 무심코 사진 찍었어!",""],["交代","こうたい","교체, 교대","ピッチャーを交代します。","투수를 교체하겠습니다.",""],["引き継ぎ","ひきつぎ","인계, 인수","仕事の引き継ぎを行う","업무 인계를 하다",""],["産地","さんち","산지","","",""],["慰む","なぐさむ","위안 삼다","","",""],["目を付ける","めをつける","눈여겨보다, 주목하다","前からあの商品に目を付けていた。","전부터 그 상품을 눈여겨보고 있었다.",""],["売(れ)行き","うれゆき","팔림새","この商品は売れ行きがいい。","이 상품은 잘 팔려.",""],["首を吊る","くびをつる","(표현) 목을 매다","ニュースでは「首を吊る」という表現は避けることが多い。","뉴스에서는 ‘목을 매다’라는 표현을 피하는 일이 많아.",""],["田代まさし","たしろ まさし","다시로 마사시(인명)","田代まさしの昔の番組をたまたま見た。","다시로 마사시의 옛 프로그램을 우연히 봤다.",""],["後の祭り","あとのまつり","때를 놓쳐 보람이 없음, 사후약방문","今さら悔やんでも後の祭りだ。","이제 와서 후회해도 소용없다.",""],["手ふき","てふき","손수건, 손 닦는 천","手ふきを持ち歩く","손수건을 가지고 다니다",""],["肯綮","こうけい","사물의 급소; 중요한 곳","肯綮に当たる指摘","급소를 찌르는 지적",""],["気苦労","きぐろう","걱정; 심로","気苦労が絶えない。","걱정이 끊이지 않는다.",""],["覚束無い","おぼつかない","불안하다; 미덥지 않다","合格(ごうかく)は覚束無(おぼつかな)い","합격은 어려울 것 같다",""],["艱難汝を玉にす","かんなんなんじをたまにす","고난이 사람을 성장시킨다 (文語/격언)","艱難汝を玉にす、って言うし、今は我慢の時だね。","‘고난이 사람을 만든다’는 말도 있으니, 지금은 참을 때야.",""],["切り捨て","きりすて","절삭; 잘라 버림","小数点以下を切り捨てにする。","소수점 이하를 버리다.",""],["俯く","うつむく","고개를 숙이다; 아래로 처지다","彼女は黙って俯いた","그녀는 말없이 고개를 숙였다",""],["北欧","ほくおう","북유럽","","",""],["遅れを取る","おくれをとる","뒤처지다; 밀리다","技術競争で遅れを取らないよう努力する。","기술 경쟁에서 뒤처지지 않도록 노력한다.",""],["称える","たたえる","칭송하다, 기리다","","",""],["強豪","きょうごう","강호, 강팀","決勝で強豪と当たる","결승에서 강호와 맞붙다",""],["力を込める","ちからをこめる","힘을 주다, 집중하다","彼は力を込めてスピーチをした。","그는 힘을 주어 연설했다.",""],["卑しい","いやしい","천하다, 비열하다","","",""],["晩酌","ばんしゃく","저녁 술","","",""],["労組","ろうそ","노조; 노동조합","労組(ろうそ)が賃上(ちんあ)げを要求(ようきゅう)した。","노조가 임금 인상을 요구했다.",""],["引き合う","ひきあう","서로 끌어당기다; 거래하다","外国商社と引き合う","외국 상사와 거래하다",""],["荘重","そうちょう","장중함","荘重な音楽が流れた。","장중한 음악이 흘렀다.",""],["揺れ動く","ゆれうごく","흔들리다, 동요하다","心が揺れ動く","마음이 흔들리다",""],["煙たがる","けむたがる","거북해하다; 내켜하지 않다","若者が老人を煙たがるのは悲しい。","젊은이들이 노인을 거북해하는 건 슬픈 일이다.",""],["人面獣心","じんめんじゅうしん","인면수심","あいつ、本当に人面獣心だよ。","저 녀석, 정말 인면수심이야.",""],["引き立つ","ひきたつ","돋보이다, 두드러지다","赤い花が緑の中で引き立つ。","빨간 꽃이 초록 속에서 돋보인다.",""],["見物客","けんぶつきゃく","구경꾼, 관람객","祭りの見物客で通りがいっぱいだ。","축제 구경꾼들로 거리가 꽉 찼어.",""],["熊掌","ゆうしょう","곰의 발바닥(진귀한 음식)","","",""],["掠る","かする","스치다; 슬쩍 가로채다","","",""],["掉尾を飾る","とうびをかざる","마지막을 장식하다","彼の演説が大会の掉尾を飾った。","그의 연설이 대회의 마지막을 장식했다.",""],["死別","しべつ","사별","","",""],["挟まる","はさまる","끼이다","","",""],["武勇","ぶゆう","무용(용맹)","","",""],["駆け込み","かけこみ","막바지로 급히 함; 뛰어듦","締め切り前の駆け込み申請が殺到した。","마감 전 막바지 신청이 쇄도했다.",""],["數種","すうしゅ","수종, 몇 가지 종류","数種の花が同時に咲いている。","몇 가지 종류의 꽃이 동시에 피어 있다.",""],["現れる","あらわれる","나타나다","","",""],["保守","ほしゅ","보수(유지·관리)","","",""],["持出し","もちだし","들고 나감; 반출; 부족분 부담","図書の持出しは禁止です。","도서의 반출은 금지되어 있습니다.",""],["どたりと","どたりと","털썩(옆으로 쓰러지는 소리).","どたりと倒れる","털썩 쓰러지다",""],["繰越す","くりこす","이월하다; 미루다 (會計)","予算は来年度に繰越された。","예산은 다음 회계연도로 이월됐어.",""],["梅に鶯","うめにうぐいす","매화와 휘파람새; 잘 어울리는 한 쌍","あの二人、ほんと梅に鶯って感じだね。","저 둘, 진짜 천생연분 같아.",""],["黄金万能","おうごんばんのう","황금만능","現代社会は黄金万能の時代だ。","현대 사회는 돈이 만능인 시대다.",""],["少なからず","すくなからず","적잖이; 꽤","その一言、少なからず傷ついたよ。","그 한마디, 꽤 상처였어.",""],["ヘビー","ヘビー","헤비, 무거운, 심한","彼はヘビースモーカーだ","그는 골초다",""],["馬耳東風","ばじとうふう","馬耳東風, 남의 말을 귓등으로 흘림","","",""],["合併","がっぺい","합병","会社(かいしゃ)が合併(がっぺい)した。","회사가 합병되었다.",""],["捜索","そうさく","수색","","",""],["揉まれる","もまれる","시달리다; 부대끼다","新入社員の頃は社会に揉まれたな〜。","신입사원 때는 사회의 풍파에 정말 시달렸지~.",""],["いじらしい","いじらしい","갸륵하다; 애처롭다","小さな子が必死に頑張る姿はいじらしい。","작은 아이가 열심히 노력하는 모습은 갸륵하다.",""],["奥義","おうぎ","비전, 오의","","",""],["擁","よう","안을 옹","","",""],["よれよれ","よれよれ","구깃구깃; 후줄근함","よれよれのシャツはアイロンかけよ。","구겨진 셔츠는 다림질하자.",""],["軽んずる","かろんずる","얕보다; 업신여기다; 가볍게 보다","人を軽んずる","사람을 얕보다",""],["予て","かねて","전에, 미리 (文語)","","",""],["痙攣","けいれん","경련","胃痙攣","위경련",""],["火影","ほかげ","불빛 그림자 (文語/詩的)","","",""],["はっと","はっと","문득; 깜짝","電話で名前を聞いてはっと気づいた。","전화로 이름을 듣고 문득 깨달았어.",""],["証する","しょうする","증명하다; 보증하다","多くの例がこれを証している","많은 예가 이를 증명하고 있다",""],["褒めたたえる","ほめたたえる","극구 칭찬하다","彼の勇気をみんなで褒めたたえた。","그의 용기를 모두 함께 칭찬했다.",""],["引き下がる","ひきさがる","물러서다; 손을 떼다","彼は議論から引き下がった","그는 논쟁에서 물러섰다",""],["無傷","むきず","상처 없음; 흠 없음","事故(じこ)にあったけど無傷(むきず)だった","사고를 당했지만 다치지 않았다",""],["朝三暮四","ちょうさんぼし","조삼모사; 말로 속임","朝三暮四の説明には乗らない。","요설에는 넘어가지 않는다.",""],["流離う","さすらう","방랑하다, 떠돌다 (文語)","彼(かれ)は街(まち)を流離(さすら)っていた","그는 거리를 떠돌고 있었다",""],["致死","ちし","치사","過失致死の疑いで捜査が始まった。","과실치사 혐의로 수사가 시작되었다.",""],["まごまご","まごまご","우물쭈물","まごまごしてると電車逃すよ。","우물쭈물하다간 전철 놓친다.",""],["手抜き","てぬき","대충함; 부실","今回は手抜きしないで、しっかりやろう。","이번엔 대충하지 말고 제대로 하자.",""],["久しぶり","ひさしぶり","오랜만","","",""],["容易い","たやすい","쉽다, 용이하다","これは容易い問題だ。","이건 쉬운 문제야.",""],["養子","ようし","양자","親戚の子を養子にする","친척의 아이를 양자로 삼다",""],["焦眉","しょうび","초미(급박한 상황의 비유)","","",""],["温かみ","あたたかみ","따뜻한 느낌; 온기; 인정미","この水にはまだ温かみが残っている","이 물에는 아직 온기가 남아 있다",""],["作り上げる","つくりあげる","완성하다; 꾸며내다","彼は一人でこの作品を作り上げた。","그는 혼자서 이 작품을 완성했다.",""],["お家","おいえ","댁, 남의 집(존칭)","明日、お家に伺ってもいいですか","내일 댁에 찾아가도 될까요?",""],["力ずくで","ちからずくで","힘으로; 강제로","力(ちから)ずくで押(お)し通(とお)した","힘으로 밀어붙였다",""],["鎮まる","しずまる","가라앉다, 진정되다","","",""],["陣列","じんれつ","진열, 대열 배치","兵士たちが陣列を整えた。","병사들이 진열을 가다듬었다.",""],["黄ばむ","きばむ","노래지다, 누렇게 변하다","古い本の紙が黄ばんでいる。","오래된 책의 종이가 누렇게 변했다.",""],["項","こう","목 항","","",""],["ずれ","ずれ","엇갈림, 어긋남","二人の意見にずれがある。","두 사람 의견에 어긋남이 있다.",""],["課する","かする","부과하다; (일을) 시키다","税を課する","세금을 부과하다",""],["瀕する","ひんする","절박한 형편에 처하다","死に瀕する","죽을 지경에 이르다",""],["束縛","そくばく","속박","","",""],["屏障","へいしょう","방패, 장벽","","",""],["労しい","いたわしい","가엾다; 애처롭다","労(いたわ)しい姿(すがた)に胸(むね)が痛(いた)む","애처로운 모습에 가슴이 아프다",""],["てんで","てんで","아예(부정과 함께); 아주.","てんでだめだ","아예 틀렸다",""],["白粉","おしろい","분(화장품)","","",""],["いがみ合う","いがみあう","서로 으르렁거리다 (口語)","小さなことでいがみ合わないで。","사소한 일로 으르렁대지 마.",""],["屋根","やね","지붕","","",""],["役目","やくめ","임무; 역할","親(おや)としての役目(やくめ)を果(は)たす。","부모로서의 역할을 다하다.",""],["斑","まだら／ふ／はん","얼룩; 반점","斑模様の猫","얼룩무늬 고양이",""],["石碑","せきひ","비석; 석비","公園の石碑に、町の歴史が刻まれてたよ。","공원 비석에 이 마을 역사가 새겨져 있었어.",""],["治める","おさめる","다스리다","","",""],["卑賤","ひせん","비천함","","",""],["師匠","ししょう","스승, 사부","","",""],["売り飛ばす","うりとばす","팔아 치우다","不用品を売り飛ばした。","쓰지 않는 물건을 팔아 치웠다.",""],["航空母艦","こうくうぼかん","항공모함","ニュースで新型の航空母艦が話題になってた。","뉴스에서 신형 항공모함이 화제였어.",""],["付する","ふする","붙이다; 첨부하다","傍線を付した語","밑줄을 친 단어",""],["方眼","ほうがん","모눈","五ミリ方眼のノートを使う。","5밀리 모눈 노트를 사용한다.",""],["有る限り","あるかぎり","있는 한; 있는 것 모두","力の有る限り走り続ける。","힘이 닿는 한 계속 달린다.",""],["債券","さいけん","채권.","国債(こくさい)などの債券を買(か)う","국채 등의 채권을 사다",""],["ふんだん","ふんだん","풍부함; 충분함","ふんだんな軍資金","풍부한 군자금",""],["掘り起こし","ほりおこし","발굴, 찾아냄","古い資料の掘り起こしをした。","옛 자료를 발굴했어.",""],["心掛ける","こころがける","유념하다, 명심하다","常に感謝の気持ちを心掛ける。","항상 감사하는 마음을 가지려고 한다.",""],["齧歯類","げっしるい","설치류, 쥐목","齧歯類の動物","설치류 동물",""],["断片","だんぺん","단편, 조각","","",""],["懲戒","ちょうかい","징계","懲戒(ちょうかい)処分(しょぶん)を受(う)ける。","징계 처분을 받다.",""],["展望台","てんぼうだい","전망대","展望台から夜景を見た。","전망대에서 야경을 봤다.",""],["科する","かする","(벌·세금을) 과하다","罰金を科する","벌금을 과하다",""],["夜分","やぶん","밤중","夜分にお電話して失礼します。","밤중에 전화 드려 실례합니다.",""],["定石","じょうせき","정석; 규범적인 방식","これは商売(しょうばい)の定石(じょうせき)だ","이건 장사의 정석이다",""],["誠心誠意","せいしんせいい","성심성의","","",""],["調子がいい","ちょうしがいい","몸이나 일의 상태가 좋다; 약삭빠르다","今日は調子がいいから仕事がはかどる。","오늘은 컨디션이 좋아서 일이 잘 된다.",""],["真面","まとも","정면; 성실함; 착실함","彼は真面な人間だ。","그는 착실한 사람이다.",""],["いっぺんに","いっぺんに","한번에, 한꺼번에","たまった仕事をいっぺんにかたづける","밀린 일을 한꺼번에 해치우다",""],["出番","でばん","나갈 차례; 출연 순서","もうすぐ君の出番だ。","곧 네 차례야.",""],["嫌らしい","いやらしい","불쾌한; 추잡한; 기분 나쁜","嫌(いや)らしい目付(めつ)きをするな","기분 나쁜 눈초리 하지 마",""],["ただでさえ","ただでさえ","그렇지 않아도 (口語)","ただでさえ寒いのに","그렇지 않아도 추운데",""],["もじもじ","もじもじ","머뭇머뭇, 우물쭈물","彼はもじもじして答えなかった","그는 머뭇거리며 대답하지 않았다",""],["終える","おえる","끝내다","","",""],["惹き付ける","ひきつける","끌다; 매혹하다","彼(かれ)の話(はなし)に完全(かんぜん)に惹(ひ)き付(つ)けられた","그의 이야기에 완전히 끌렸다",""]];
+var KR={"一":"한 일","万":"일만 만","三":"석 삼","上":"위 상","下":"아래 하","不":"아닐 불","中":"가운데 중","久":"오랠 구","予":"미리 예","交":"사귈 교","人":"사람 인","仁":"어질 인","付":"붙일 부","代":"대신할 대","作":"지을 작","併":"아우를 병","価":"값 가","保":"지킬 보","俯":"굽을 부","債":"빚 채","傷":"다칠 상","先":"먼저 선","出":"날 출","分":"나눌 분","切":"끊을 절","列":"벌일 렬","別":"나눌 별","券":"문서 권","力":"힘 력","労":"일할 로","勇":"날랠 용","動":"움직일 동","化":"될 화","北":"북녘 북","匠":"장인 장","卑":"낮을 비","取":"취할 취","口":"입 구","叩":"두드릴 고","叭":"나팔 팔","台":"대 대","合":"합할 합","吉":"길할 길","吊":"매달 조","名":"이름 명","呆":"어리석을 매","喇":"나팔 랄","四":"넉 사","回":"돌 회","図":"그림 도","固":"굳을 고","地":"땅 지","報":"알릴 보","場":"마당 장","売":"팔 매","外":"바깥 외","夜":"밤 야","大":"큰 대","天":"하늘 천","失":"잃을 실","奥":"깊을 오","女":"여자 녀","嫌":"싫을 혐","子":"아들 자","守":"지킬 수","定":"정할 정","客":"손 객","宮":"집 궁","家":"집 가","容":"얼굴 용","察":"살필 찰","少":"적을 소","尾":"꼬리 미","局":"판 국","屋":"집 옥","屏":"병풍 병","展":"펼 전","山":"뫼 산","峰":"봉우리 봉","巷":"거리 항","師":"스승 사","度":"법도 도","廉":"싸울 렴","引":"끌 인","弱":"약할 약","張":"베풀 장","強":"강할 강","弾":"탄알 탄","影":"그림자 영","役":"부릴 역","後":"뒤 후","徳":"큰 덕","心":"마음 심","息":"숨쉴 식","情":"뜻 정","惹":"끌 야","意":"뜻 의","慰":"위로할 위","懲":"징계할 징","戒":"경계할 계","所":"바 소","手":"손 수","打":"칠 타","抜":"뺄 발","招":"부를 초","持":"가질 지","指":"가리킬 지","挟":"낄 협","捜":"찾을 수","捨":"버릴 사","掉":"떨칠 도","掌":"손바닥 장","掘":"팔 굴","掛":"걸 괘","掠":"노략할 략","揉":"주무를 유","揺":"흔들 요","携":"이끌 휴","擁":"안을 옹","操":"잡을 조","攣":"당길 련","數":"셀 수","斑":"얼룩 반","断":"끊을 단","新":"새 신","方":"모 방","早":"이를 조","易":"바꿀 역","晩":"늦을 만","晴":"갤 청","暁":"새벽 효","暮":"저물 모","月":"달 월","有":"있을 유","望":"바랄 망","朝":"아침 조","束":"묶을 속","杭":"말뚝 항","東":"동녘 동","林":"수풀 림","査":"조사할 사","根":"뿌리 근","桂":"계수나무 계","梅":"매화 매","橋":"다리 교","機":"틀 기","欧":"유럽 구","武":"호반 무","歯":"이 치","歳":"해 세","死":"죽을 사","殺":"죽일 살","母":"어미 모","気":"기운 기","水":"물 수","汚":"더러울 오","汝":"너 여","治":"다스릴 치","流":"흐를 류","消":"사라질 소","温":"따뜻할 온","湛":"잠길 담","瀕":"가까울 빈","火":"불 화","災":"재앙 재","無":"없을 무","焦":"탈 초","煙":"연기 연","熊":"곰 웅","片":"조각 편","物":"물건 물","狭":"좁을 협","獣":"짐승 수","玉":"구슬 옥","現":"나타날 현","産":"낳을 산","田":"밭 전","画":"그림 화","番":"차례 번","病":"병 병","痙":"경련 경","癪":"속앓이 적","白":"흰 백","皮":"가죽 피","目":"눈 목","眉":"눈썹 미","真":"참 진","眼":"눈 안","石":"돌 석","砕":"부술 쇄","碑":"비석 비","確":"확실할 확","示":"보일 시","神":"귀신 신","祭":"제사 제","科":"과목 과","称":"일컬을 칭","種":"씨 종","空":"빌 공","立":"설 립","笛":"피리 적","粉":"가루 분","粕":"찌꺼기 박","素":"본디 소","索":"찾을 색","終":"마칠 종","組":"짤 조","継":"이을 계","綮":"빗장 경","縛":"묶을 박","繁":"번성할 번","繰":"감을 조","羊":"양 양","美":"아름다울 미","義":"옳을 의","者":"놈 자","耳":"귀 이","聘":"부를 빙","肯":"즐길 긍","能":"능할 능","脆":"무를 취","致":"이를 치","航":"항해할 항","艦":"군함 함","艱":"어려울 간","苦":"쓸 고","茂":"무성할 무","荘":"엄숙할 장","行":"다닐 행","表":"겉 표","袋":"자루 대","裸":"벌거벗을 라","裾":"옷자락 거","褒":"기릴 포","見":"볼 견","覚":"깨달을 각","託":"맡길 탁","証":"증거 증","誠":"정성 성","読":"읽을 독","課":"매길 과","調":"고를 조","談":"말씀 담","議":"의논할 의","豪":"호걸 호","賤":"천할 천","起":"일어날 기","越":"넘을 월","身":"몸 신","軽":"가벼울 경","込":"넣을 입","返":"돌이킬 반","追":"쫓을 추","退":"물러날 퇴","遂":"이룰 수","遅":"더딜 지","部":"떼 부","酌":"따를 작","酒":"술 주","重":"무거울 중","野":"들 야","金":"쇠 금","鎮":"누를 진","鐘":"쇠북 종","限":"한할 한","陣":"진 진","陳":"베풀 진","隊":"무리 대","障":"막을 장","離":"떠날 리","難":"어려울 난","零":"떨어질 령","面":"낯 면","項":"목덜미 항","頭":"머리 두","類":"무리 류","風":"바람 풍","飛":"날 비","食":"먹을 식","飲":"마실 음","飾":"꾸밀 식","養":"기를 양","首":"머리 수","馬":"말 마","駆":"몰 구","骨":"뼈 골","魂":"넋 혼","魔":"마귀 마","鶯":"꾀꼬리 앵","黄":"누를 황","鼓":"북 고","齧":"깨물 설"};
+
+/* ===== Storage ===== */
+var LS={
+  get:function(k,d){try{var v=localStorage.getItem('jq_'+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('jq_'+k,JSON.stringify(v))}catch(e){}}
+};
+
+/* ===== Utils ===== */
+function hk(w){for(var i=0;i<w.length;i++){var c=w.charCodeAt(i);if((c>=0x4E00&&c<=0x9FFF)||(c>=0x3400&&c<=0x4DBF))return true}return false}
+function sh(a){var r=[...a];for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t}return r}
+function getKanji(w){var s=new Set();for(var i=0;i<w.length;i++){var c=w.charCodeAt(i);if((c>=0x4E00&&c<=0x9FFF)||(c>=0x3400&&c<=0x4DBF))s.add(w[i])}return s}
+
+var DK={'か':'が','き':'ぎ','く':'ぐ','け':'げ','こ':'ご','さ':'ざ','し':'じ','す':'ず','せ':'ぜ','そ':'ぞ','た':'だ','ち':'ぢ','つ':'づ','て':'で','と':'ど','は':'ば','ひ':'び','ふ':'ぶ','へ':'べ','ほ':'ぼ','が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ','ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ','だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と','ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ'};
+var SP=[['し','じ'],['ち','ぢ'],['す','ず'],['つ','づ'],['ひ','び'],['き','ぎ'],['は','わ']];
+
+function genFakeReading(r){
+  var f=new Set(),c=[...r];
+  c.forEach(function(x,i){if(DK[x]){var t=[...c];t[i]=DK[x];f.add(t.join(''))}});
+  for(var i=0;i<c.length-1;i++){var t=[...c];var tmp=t[i];t[i]=t[i+1];t[i+1]=tmp;f.add(t.join(''))}
+  if(r.indexOf('っ')>=0)f.add(r.replace('っ',''));
+  else if(c.length>1){var t=[...c];t.splice(1,0,'っ');f.add(t.join(''))}
+  if(r.endsWith('う'))f.add(r.slice(0,-1));else if(r.endsWith('い'))f.add(r.slice(0,-1));else{f.add(r+'う');f.add(r+'い')}
+  SP.forEach(function(p){if(r.indexOf(p[0])>=0)f.add(r.replace(p[0],p[1]));if(r.indexOf(p[1])>=0)f.add(r.replace(p[1],p[0]))});
+  if(r.indexOf('ん')>=0)f.add(r.replace('ん',''));
+  f.delete(r);f.delete('');
+  var res=[...f];
+  if(res.length<3){var pool=D.filter(function(e){return e[1]&&e[1]!==r&&Math.abs(e[1].length-r.length)<=1}).map(function(e){return e[1]});res=[...new Set([...res,...sh(pool)])].filter(function(x){return x!==r})}
+  return sh(res).slice(0,3);
+}
+
+function smartPick(ci,n){
+  var w=D[ci][0],r=D[ci][1]||'',wk=getKanji(w);
+  var t1=[],t2=[],t3=[];
+  for(var i=0;i<D.length;i++){if(i===ci||D[i][0]===w)continue;var ik=getKanji(D[i][0]),shared=false;wk.forEach(function(k){if(ik.has(k))shared=true});if(shared)t1.push(i);else if(D[i][0].length===w.length)t2.push(i);else if(D[i][1]&&Math.abs(D[i][1].length-r.length)<=1)t3.push(i)}
+  var result=[];sh(t1).forEach(function(x){if(result.length<n)result.push(x)});sh(t2).forEach(function(x){if(result.length<n)result.push(x)});sh(t3).forEach(function(x){if(result.length<n)result.push(x)});
+  if(result.length<n){var rest=[];for(var i=0;i<D.length;i++){if(i!==ci&&result.indexOf(i)<0)rest.push(i)}sh(rest).forEach(function(x){if(result.length<n)result.push(x)})}
+  return result;
+}
+
+function getStem(w){if(w.length<=1)return w;var last=w[w.length-1];if('るくすつぬぶむうぐ'.indexOf(last)>=0)return w.slice(0,-1);if(last==='い'&&w.length>2)return w.slice(0,-1);if(w.endsWith('する'))return w.slice(0,-2);if(w.endsWith('じる'))return w.slice(0,-2);return w}
+
+function makeBlanked(s,w){
+  if(!s)return null;if(s.indexOf(w)>=0)return s.replace(w,'（　　）');
+  var stem=getStem(w);if(stem.length>=2){var idx=s.indexOf(stem);if(idx>=0){var rest=s.slice(idx),end=rest.length;for(var i=0;i<rest.length;i++){if('。、！？）」'.indexOf(rest[i])>=0){end=i;break}}var m=rest.slice(0,end);if(m.length>0)return s.slice(0,idx)+'（　　）'+s.slice(idx+m.length)}}
+  var kj='';for(var i=0;i<w.length;i++){var c=w.charCodeAt(i);if((c>=0x4E00&&c<=0x9FFF)||(c>=0x3400&&c<=0x4DBF))kj+=w[i]}
+  if(kj.length>=1){var idx=s.indexOf(kj);if(idx>=0){var rest=s.slice(idx),end=rest.length;for(var i=0;i<rest.length;i++){if('。、！？）」'.indexOf(rest[i])>=0){end=i;break}}var m=rest.slice(0,end);if(m.length>0)return s.slice(0,idx)+'（　　）'+s.slice(idx+m.length)}}
+  return null;
+}
+function canFill(ci){return D[ci][3]?makeBlanked(D[ci][3],D[ci][0])!==null:false}
+function kanjiInfo(w){var p=[];for(var i=0;i<w.length;i++){if(KR[w[i]])p.push(w[i]+': '+KR[w[i]])}return p}
+
+function buildQueue(){
+  var q=[];
+  for(var ci=0;ci<D.length;ci++){var e=D[ci];if(hk(e[0]))q.push({ci:ci,mode:'reading'});q.push({ci:ci,mode:'meaning'});if(canFill(ci))q.push({ci:ci,mode:'fill'})}
+  return sh(q);
+}
+
+/* ===== State ===== */
+var S={
+  cur:null,opts:[],sel:-1,ans:false,
+  st:LS.get('st',{c:0,w:0,s:0}),
+  stars:new Set(LS.get('stars',[])),
+  hards:new Set(LS.get('hards',[])),
+  wrongs:new Set(LS.get('wrongs',[])),
+  ox:false,ok:false,rv:false,flt:'all',
+  prog:{done:0,total:0},
+  queue:[],wQueue:[]
+};
+
+function saveState(){
+  LS.set('st',S.st);
+  LS.set('stars',[...S.stars]);
+  LS.set('hards',[...S.hards]);
+  LS.set('wrongs',[...S.wrongs]);
+}
+
+/* ===== Logic ===== */
+function makeOpts(ci,mode){
+  var e=D[ci],o;
+  if(mode==='reading'){var fk=genFakeReading(e[1]);o=[{v:e[1],c:true,i:ci}];fk.forEach(function(f){o.push({v:f,c:false,i:-1})})}
+  else if(mode==='meaning'){var d=smartPick(ci,3);o=[{i:ci,v:e[2],c:true}];d.forEach(function(x){o.push({i:x,v:D[x][2],c:false})})}
+  else{var d=smartPick(ci,3);o=[{i:ci,v:e[0],c:true}];d.forEach(function(x){o.push({i:x,v:D[x][0],c:false})})}
+  return sh(o);
+}
+
+function rebuild(f){
+  var q=buildQueue();
+  if(f==='star')q=q.filter(function(x){return S.stars.has(x.ci)});
+  else if(f==='hard')q=q.filter(function(x){return S.hards.has(x.ci)});
+  else if(f==='wrong')q=q.filter(function(x){return S.wrongs.has(x.ci)});
+  S.queue=q;S.prog={done:0,total:q.length};
+}
+
+function next(){
+  if(S.wQueue.length>0&&Math.random()<0.3){var it=S.wQueue.shift();S.cur=it;S.rv=true;S.opts=makeOpts(it.ci,it.mode);S.ans=false;S.sel=-1;S.ox=false;render();return}
+  S.rv=false;
+  if(S.queue.length===0)rebuild(S.flt);
+  if(S.queue.length===0){S.cur=null;S.opts=[];render();return}
+  var it=S.queue.shift();S.cur=it;S.opts=makeOpts(it.ci,it.mode);S.ans=false;S.sel=-1;S.ox=false;
+  S.prog.done++;render();
+}
+
+function pick(i){
+  if(S.ans)return;S.ans=true;S.sel=i;
+  var g=S.opts[i].c;S.ok=g;S.ox=true;
+  S.st.c+=g?1:0;S.st.w+=g?0:1;S.st.s=g?S.st.s+1:0;
+  if(g){S.wrongs.delete(S.cur.ci)}else{S.wrongs.add(S.cur.ci);S.wQueue.push(S.cur)}
+  saveState();render();
+  setTimeout(function(){S.ox=false;render()},800);
+}
+
+function toggleStar(){var ci=S.cur.ci;if(S.stars.has(ci))S.stars.delete(ci);else S.stars.add(ci);saveState();render()}
+function toggleHard(){var ci=S.cur.ci;if(S.hards.has(ci))S.hards.delete(ci);else S.hards.add(ci);saveState();render()}
+function setFilter(f){S.flt=f;rebuild(f);next()}
+
+/* ===== Keyboard ===== */
+document.addEventListener('keydown',function(ev){
+  if(!S.ans&&ev.key>='1'&&ev.key<='4'){var i=parseInt(ev.key)-1;if(i<S.opts.length)pick(i)}
+  if((ev.key==='Enter'||ev.key===' ')&&S.ans){ev.preventDefault();next()}
+});
+
+/* ===== Render ===== */
+function h(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function render(){
+  var el=document.getElementById('app');
+  if(!S.cur){el.innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#777">로딩중...</div>';return}
+  var e=D[S.cur.ci],ci=S.cur.ci,mode=S.cur.mode;
+  var mL={reading:'읽기',meaning:'뜻',fill:'빈칸'}[mode];
+  var mC={reading:'#33FF66',meaning:'#FFFF33',fill:'#5599ff'}[mode];
+  var iC=S.sel>=0&&S.opts[S.sel]&&S.opts[S.sel].c;
+  var bl=mode==='fill'?makeBlanked(e[3],e[0]):null;
+  var ki=kanjiInfo(e[0]);
+  var pct=S.prog.total?Math.min(S.prog.done/S.prog.total*100,100):0;
+
+  var out='';
+
+  /* OX */
+  if(S.ox)out+='<div class="ox"><span style="color:'+(S.ok?'#33FF66':'#ff6b6b')+'">'+(S.ok?'⭕':'❌')+'</span></div>';
+
+  /* Header */
+  out+='<div class="hdr"><span class="t">単語クイズ</span><span class="p">'+S.prog.done+'/'+S.prog.total+'</span></div>';
+  out+='<div class="bar"><div class="fill" style="width:'+pct+'%"></div></div>';
+
+  /* Stats */
+  out+='<div class="stats"><span>정답<b style="color:#33FF66">'+S.st.c+'</b></span><span>오답<b style="color:#ff6b6b">'+S.st.w+'</b></span><span>연속<b style="color:#FFFF33">'+S.st.s+'</b></span><span>⭐<b>'+S.stars.size+'</b></span><span>😵<b>'+S.hards.size+'</b></span></div>';
+
+  /* Filter */
+  out+='<div class="flt">';
+  [['all','전체'],['star','⭐'],['hard','😵'],['wrong','❌']].forEach(function(x){
+    out+='<button class="'+(S.flt===x[0]?'on':'')+'" onclick="setFilter(''+x[0]+'')">'+x[1]+'</button>';
+  });
+  out+='</div>';
+
+  /* Mode tag */
+  out+='<div class="mtag">';
+  if(S.rv)out+='<span class="rv">🔄</span>';
+  out+='<span class="tag" style="color:'+mC+';background:'+mC+'18">'+mL+'</span></div>';
+
+  /* Card */
+  out+='<div class="card'+(S.ans?(iC?' ok':' ng'):'')+'">';
+
+  /* Star/Hard buttons */
+  out+='<div class="acts">';
+  out+='<button style="border:1px solid '+(S.stars.has(ci)?'#FFFF33':'#333')+';background:'+(S.stars.has(ci)?'#FFFF33':'transparent')+'" onclick="toggleStar()">⭐</button>';
+  out+='<button style="border:1px solid '+(S.hards.has(ci)?'#ff6b6b':'#333')+';background:'+(S.hards.has(ci)?'#ff6b6b':'transparent')+'" onclick="toggleHard()">😵</button>';
+  out+='</div>';
+
+  /* Question */
+  if(mode==='reading'){out+='<div class="q-label">読み方を選べ</div><div class="q-word">'+h(e[0])+'</div>'}
+  else if(mode==='meaning'){out+='<div class="q-label">意味を選べ</div><div class="q-word">'+h(e[0])+'</div>'}
+  else{out+='<div class="q-label">（　）に入るものは？</div><div class="q-fill">'+h(bl||e[3])+'</div>';if(e[4])out+='<div class="q-fillk">'+h(e[4])+'</div>'}
+
+  /* Options */
+  out+='<div class="opts">';
+  S.opts.forEach(function(o,i){
+    var cls='opt';
+    if(S.ans){
+      cls+=' locked';
+      if(i===S.sel&&o.c)cls+=' sel-ok';
+      else if(i===S.sel&&!o.c)cls+=' sel-ng';
+      else if(o.c)cls+=' show-ok';
+      else cls+=' dim';
+    }
+    out+='<div class="'+cls+'" onclick="pick('+i+')">'+h(o.v)+'</div>';
+  });
+  out+='</div>';
+
+  /* Back */
+  if(S.ans){
+    out+='<div class="back">';
+    out+='<div class="bw">'+h(e[0])+'</div>';
+    if(ki.length>0)out+='<div class="bki">'+ki.map(h).join('\u3000')+'</div>';
+    out+='<div class="br">'+h(e[1])+'</div>';
+    out+='<div class="bm">'+h(e[2])+'</div>';
+    if(e[5])out+='<div class="bex">'+h(e[5])+'</div>';
+    if(e[3])out+='<div class="bej">'+h(e[3])+'</div>';
+    if(e[4])out+='<div class="bek">'+h(e[4])+'</div>';
+    if(S.sel>=0&&S.opts[S.sel]&&!S.opts[S.sel].c&&S.opts[S.sel].i>=0){
+      var wi=S.opts[S.sel].i;
+      out+='<div class="bwrong">❌ '+h(D[wi][0])+'（'+h(D[wi][1])+'）= '+h(D[wi][2])+'</div>';
+    }
+    out+='</div>';
+  }
+
+  out+='</div>'; /* /card */
+
+  /* Next button */
+  if(S.ans)out+='<button class="nxt" onclick="next()">다음 →</button>';
+
+  el.innerHTML=out;
+}
+
+/* ===== Init ===== */
+rebuild('all');
+next();
+</script>
+</body>
+</html>
