@@ -1,0 +1,16 @@
+{
+  "name": "日本語 単語クイズ",
+  "short_name": "単語クイズ",
+  "description": "일본어 단어 퀴즈 학습 앱",
+  "start_url": "/quiz/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "/quiz/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
